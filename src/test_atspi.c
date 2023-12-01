@@ -84,7 +84,7 @@ main (int argc, char **argv)
 		{
 			application = atspi_accessible_get_child_at_index (desktop, j, error);
 			application_name = atspi_accessible_get_name (application, error);
-			printf ("Application [%i]: %s\n", j, application_name);
+			printf ("Application [%i]: %s, %p\n", j, application_name, application);
 		}
 	}
 
@@ -116,7 +116,23 @@ device_listener_test_destroy (void *data)
 void
 event_listener_generic (const AtspiEvent *event)
 {
-    printf ("focus: type = %s\n", event->type);
+	GError **error;
+	gchar *source_name = 0;
+	gchar *sender_name = 0;
+
+	if (!event->sender || !event->source)
+		return;
+
+	if (event->sender)
+		sender_name = atspi_accessible_get_name (event->sender, error);
+	if (event->source)
+		source_name = atspi_accessible_get_name (event->source, error);
+
+	if (strcmp(sender_name, "MiniBrowser") == 0 || strcmp(source_name, "object:state-changed:focused") == 0) {
+	    printf ("focus: type = %s, source: %p, source_name: %s, sender: %p, sender_name: %s\n", event->type, event->source, source_name ? source_name: "", event->sender, sender_name ? sender_name:"");
+	}
+	free(source_name);
+	free(sender_name);
     // object:children-changed:add
     // source: desktop frame | main
     // application: none
